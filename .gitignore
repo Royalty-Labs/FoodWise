@@ -1,0 +1,61 @@
+﻿# Secrets and environment variables
+.env
+.env.*
+!.env.example
+!.env.*.example
+!.env.example.*
+
+# Python environments and caches
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+
+# Frontend dependencies and build output
+node_modules/
+.pnpm-store/
+dist/
+build/
+.next/
+coverage/
+
+# Local model weights and model caches
+*.gguf
+*.safetensors
+*.onnx
+*.pt
+*.pth
+*.ckpt
+models/
+.hf-cache/
+huggingface/
+.cache/
+
+# Logs, temporary files and local databases
+*.log
+tmp/
+.tmp/
+scratch/
+*.sqlite
+*.sqlite3
+*.db
+
+# IDE and operating-system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Locally installed llama.cpp runtime binaries
+tools/llama.cpp/*.exe
+tools/llama.cpp/*.dll
+tools/llama.cpp/*.lib
+tools/llama.cpp/*.pdb
+tools/llama.cpp/*.obj
