@@ -68,6 +68,12 @@ class FoodBudget(Base):
         Numeric(12, 2)
     )
 
+    budget_amount: Mapped[Decimal] = mapped_column(
+    Numeric(12, 2),
+    nullable=False,
+    default=Decimal("0.00"),
+)
+
     period: Mapped[str] = mapped_column(
         String(20),
         default="monthly",
@@ -170,7 +176,66 @@ class FoodPackage(Base):
         server_default=func.now(),
     )
 
+    items: Mapped[list["FoodPackageItem"]] = relationship(
+        back_populates="package",
+        cascade="all, delete-orphan",
+        order_by="FoodPackageItem.name",
+    )
 
+class FoodPackageItem(Base):
+    __tablename__ = "food_package_items"
+
+    id: Mapped[str] = mapped_column(
+        String(36),
+        primary_key=True,
+        default=lambda: str(uuid4()),
+    )
+
+    package_id: Mapped[str] = mapped_column(
+        ForeignKey("food_packages.id", ondelete="CASCADE"),
+        index=True,
+    )
+
+    name: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
+
+    quantity: Mapped[Decimal] = mapped_column(
+        Numeric(12, 3),
+        nullable=False,
+    )
+
+    unit: Mapped[str] = mapped_column(
+        String(30),
+        nullable=False,
+    )
+
+    estimated_unit_price: Mapped[Decimal | None] = mapped_column(
+        Numeric(12, 2),
+        nullable=True,
+    )
+
+    price_checked_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+
+    verification_status: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+        default="unverified",
+        server_default="unverified",
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+    )
+
+    package: Mapped["FoodPackage"] = relationship(
+        back_populates="items",
+    )
 
 
 

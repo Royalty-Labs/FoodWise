@@ -87,7 +87,7 @@ def test_recommend_cheapest_suitable_package_when_budget_is_too_low():
     package, reason = recommend_food_package(user, packages)
 
     assert package.name == "Standard Food Plan"
-    assert "exceeds" in reason.lower()
+    assert "above your limit" in reason.lower()
 
 
 def test_recommend_largest_available_package_for_large_household():

@@ -1,4 +1,6 @@
+from typing import Literal
 from decimal import Decimal
+from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
@@ -30,6 +32,7 @@ class FoodBudgetCreate(BaseModel):
     user_id: str
 
 
+
 class FoodBudgetResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -37,14 +40,20 @@ class FoodBudgetResponse(BaseModel):
     user_id: str
     income_amount: Decimal
     recommended_amount: Decimal
+    budget_amount: Decimal
     period: str
+
+
+class FoodBudgetUpdate(BaseModel):
+    budget_amount: Decimal = Field(ge=0)
+
 
 class SavingsGoalCreate(BaseModel):
     user_id: str
     name: str = Field(min_length=2, max_length=100)
     target_amount: Decimal = Field(gt=0)
     duration_months: int = Field(gt=0)
-    contribution_frequency: str = "monthly"
+    contribution_frequency: Literal["daily", "weekly", "monthly"] = "monthly"
 
 
 class SavingsGoalResponse(BaseModel):
@@ -86,6 +95,31 @@ class SavingsContributionResponse(BaseModel):
     status: str
 
 
+
+class FoodPackageItemCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=100)
+    quantity: Decimal = Field(gt=0)
+    unit: str = Field(min_length=1, max_length=30)
+    estimated_unit_price: Decimal | None = Field(
+        default=None,
+        ge=0,
+    )
+
+
+
+class FoodPackageItemResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    name: str
+    quantity: Decimal
+    unit: str
+    estimated_unit_price: Decimal | None
+    price_checked_at: datetime | None
+    verification_status: str
+
+
+
 class FoodPackageResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -96,6 +130,12 @@ class FoodPackageResponse(BaseModel):
     estimated_cost: Decimal
     household_size: int
     duration_days: int
+    items: list[FoodPackageItemResponse] = Field(default_factory=list)
+    contents_status: Literal[
+        "not_defined",
+        "partially_verified",
+        "verified",
+    ] = "not_defined"
 
 
 class FoodRecommendationResponse(BaseModel):
@@ -122,9 +162,18 @@ class FoodAssistantRequest(BaseModel):
     message: str = Field(min_length=1, max_length=2000)
 
 
+
 class FoodAssistantIntent(BaseModel):
-    intent: str
+    intent: Literal[
+        "get_food_plan",
+        "adjust_food_budget",
+        "show_food_plan",
+    ]
     user_id: str
+    budget_amount: Decimal | None = None
+    income_amount: Decimal | None = Field(default=None, gt=0)
+    household_size: int | None = Field(default=None, gt=0)
+
 
 
 class FoodAssistantChatResponse(BaseModel):

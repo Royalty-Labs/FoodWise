@@ -21,6 +21,36 @@ router = APIRouter(
 )
 
 
+@router.get(
+    "/user/{user_id}",
+    response_model=list[SavingsGoalResponse],
+)
+def get_user_savings_goals(
+    user_id: str,
+    db: Session = Depends(get_db),
+):
+    user = (
+        db.query(User)
+        .filter(User.id == user_id)
+        .first()
+    )
+
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found.",
+        )
+
+    goals = (
+        db.query(SavingsGoal)
+        .filter(SavingsGoal.user_id == user_id)
+        .all()
+    )
+
+    return goals
+
+
+
 @router.post(
     "",
     response_model=SavingsGoalResponse,
@@ -43,8 +73,9 @@ def create_savings_goal(
         )
 
     contribution_amount = calculate_contribution(
-        goal_data.target_amount,
-        goal_data.duration_months,
+       goal_data.target_amount,
+       goal_data.duration_months,
+       goal_data.contribution_frequency,
     )
 
     goal = SavingsGoal(

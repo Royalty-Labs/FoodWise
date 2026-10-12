@@ -8,41 +8,51 @@ from app.services.budget_service import calculate_food_budget
 def recommend_food_package(
     user: User,
     packages: list[FoodPackage],
+    budget_limit: Decimal | None = None,
+    income_amount: Decimal | None = None,
+    household_size: int | None = None,
 ) -> tuple[FoodPackage, str]:
-
     if not packages:
         raise ValueError(
             "No food packages are available for recommendation."
         )
 
-    monthly_income = user.income_amount
-    household_size = user.household_size
+    monthly_income = (
+        income_amount
+        if income_amount is not None
+        else user.income_amount
+    )
 
-    # Use the shared budget calculation instead of duplicating it.
-    recommended_budget = calculate_food_budget(monthly_income)
+    effective_household_size = (
+        household_size
+        if household_size is not None
+        else user.household_size
+    )
 
-    # Prefer packages designed for the user's household size
-    # or a larger household.
+    recommended_budget = (
+        budget_limit
+        if budget_limit is not None
+        else calculate_food_budget(monthly_income)
+    )
+
     suitable_packages = [
         package
         for package in packages
-        if package.household_size >= household_size
+        if package.household_size >= effective_household_size
     ]
 
-    # If no package covers the household size, use the
-    # packages designed for the largest available household.
+    # If no package accommodates the household, use the largest
+    # available package rather than recommending an undersized one.
     if not suitable_packages:
         largest_size = max(
             package.household_size for package in packages
         )
-
         suitable_packages = [
             package
             for package in packages
             if package.household_size == largest_size
         ]
 
-    # Prefer a suitable package that does not exceed the budget.
     affordable_packages = [
         package
         for package in suitable_packages
@@ -50,54 +60,32 @@ def recommend_food_package(
     ]
 
     if affordable_packages:
-        # Select the most expensive affordable package.
-        recommended_package = max(
+        # Choose the smallest suitable package that fits the budget.
+        package = min(
             affordable_packages,
-            key=lambda package: package.estimated_cost,
+            key=lambda item: (
+                item.household_size,
+                item.estimated_cost,
+            ),
         )
 
         reason = (
-            f"Based on your monthly income of "
-            f"\u20A6{monthly_income:,.2f} and household size of "
-            f"{household_size}, we recommend the "
-            f"{recommended_package.name}. Its estimated cost is "
-            f"\u20A6{recommended_package.estimated_cost:,.2f}, "
-            f"which is within your recommended monthly food "
-            f"budget of \u20A6{recommended_budget:,.2f}."
+            f"{package.name} costs ₦{package.estimated_cost:,.2f} "
+            "and fits within your food budget for your household size."
         )
 
-    else:
-        # No suitable package fits within the recommended budget.
-        recommended_package = min(
-            suitable_packages,
-            key=lambda package: package.estimated_cost,
-        )
+        return package, reason
 
-        difference = (
-            recommended_package.estimated_cost - recommended_budget
-        )
+    # No suitable package is affordable: recommend the cheapest
+    # suitable option and explain that it exceeds the budget.
+    package = min(
+        suitable_packages,
+        key=lambda item: item.estimated_cost,
+    )
 
-        reason = (
-            f"Based on your monthly income of "
-            f"\u20A6{monthly_income:,.2f} and household size of "
-            f"{household_size}, the "
-            f"{recommended_package.name} is the lowest-cost "
-            f"available package for your household needs. "
-            f"Its estimated cost of "
-            f"\u20A6{recommended_package.estimated_cost:,.2f} "
-            f"exceeds your recommended monthly food budget of "
-            f"\u20A6{recommended_budget:,.2f} by "
-            f"\u20A6{difference:,.2f}."
-        )
+    reason = (
+        f"{package.name} is the cheapest suitable option available, "
+        "but its cost is above your limit."
+    )
 
-    # Explain when the available packages cannot cover everyone.
-    if recommended_package.household_size < household_size:
-        reason += (
-            f" Note: this package is designed for "
-            f"{recommended_package.household_size} people, "
-            f"while your household has {household_size}. "
-            f"A package sized for your full household is not "
-            f"currently available."
-        )
-
-    return recommended_package, reason
+    return package, reason
