@@ -78,7 +78,7 @@ function App() {
   const [mealPlans, setMealPlans] = useState<MealPlan[]>([])
   const [notice, setNotice] = useState('')
 
-    const [assistantInput, setAssistantInput] = useState('')
+  const [assistantInput, setAssistantInput] = useState('')
   const [assistantMessages, setAssistantMessages] = useState<
     { role: 'user' | 'assistant'; content: string }[]
   >([])
@@ -126,7 +126,6 @@ function App() {
   const [isAddingContribution, setIsAddingContribution] = useState(false)
   const [savingsError, setSavingsError] = useState('')
 
-
   async function handleAssistantSubmit(
     event: FormEvent<HTMLFormElement>,
   ) {
@@ -164,12 +163,11 @@ function App() {
     }
   }
 
-
-
-
   // Load the signed-in user's existing savings goals.
   useEffect(() => {
-    if (!user) {
+    const currentUser = user
+
+    if (!currentUser) {
       setSavingsGoals([])
       setActiveGoal(null)
       setIsLoadingGoals(false)
@@ -178,15 +176,12 @@ function App() {
 
     let cancelled = false
 
-
-
-
     async function loadSavingsGoals() {
       setIsLoadingGoals(true)
       setSavingsError('')
 
       try {
-        const goals = await getSavingsGoals(user.id)
+        const goals = await getSavingsGoals(user!.id)
 
         if (cancelled) return
 
@@ -227,7 +222,9 @@ function App() {
 
   // Load the signed-in user's saved food budget.
   useEffect(() => {
-    if (!user) {
+    const currentUser = user
+
+    if (!currentUser) {
       setBudget('')
       setRecommendedBudget(null)
       setBudgetError('')
@@ -238,7 +235,7 @@ function App() {
 
     async function loadBudget() {
       try {
-        const result = await getFoodBudget(user.id)
+        const result = await getFoodBudget(user!.id)
 
         if (cancelled) return
 
@@ -733,16 +730,16 @@ function App() {
                 : activeTab}
             </h1>
             <p className="topbar-subtitle">
-  {activeTab === 'Overview'
-    ? 'A little planning today can go a long way.'
-    : activeTab === 'Food Planner'
-      ? 'Plan meals that work for your household.'
-      : activeTab === 'My Savings'
-        ? 'Build a plan for the food you need.'
-        : activeTab === 'AI Food Assistant'
-          ? 'Get food planning guidance tailored to your household.'
-          : 'Give your food spending a clear direction.'}
-</p>
+              {activeTab === 'Overview'
+                ? 'A little planning today can go a long way.'
+                : activeTab === 'Food Planner'
+                  ? 'Plan meals that work for your household.'
+                  : activeTab === 'My Savings'
+                    ? 'Build a plan for the food you need.'
+                    : activeTab === 'AI Food Assistant'
+                      ? 'Get food planning guidance tailored to your household.'
+                      : 'Give your food spending a clear direction.'}
+            </p>
           </div>
 
           <div className="workspace-chip">
@@ -1524,7 +1521,7 @@ function App() {
           </section>
         )}
 
-                {activeTab === 'AI Food Assistant' && (
+        {activeTab === 'AI Food Assistant' && (
           <section className="page-layout assistant-page">
             <div className="page-intro">
               <div>
@@ -1659,9 +1656,7 @@ function App() {
                 className="assistant-form"
                 onSubmit={handleAssistantSubmit}
               >
-                <label htmlFor="assistant-message">
-                  Your message
-                </label>
+                <label htmlFor="assistant-message">Your message</label>
 
                 <div className="assistant-input-row">
                   <input
