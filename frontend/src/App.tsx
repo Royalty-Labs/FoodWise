@@ -36,6 +36,7 @@ import {
   type FoodBudgetResponse,
   type SavingsGoalResponse,
   type FoodAssistantChatResponse,
+  type AssistantLanguage,
 } from './api'
 
 type Tab =
@@ -79,6 +80,8 @@ function App() {
   const [notice, setNotice] = useState('')
 
   const [assistantInput, setAssistantInput] = useState('')
+  const [assistantLanguage, setAssistantLanguage] =
+    useState<AssistantLanguage>('en')
   const [assistantMessages, setAssistantMessages] = useState<
     { role: 'user' | 'assistant'; content: string }[]
   >([])
@@ -145,7 +148,11 @@ function App() {
     setIsAssistantLoading(true)
 
     try {
-      const result = await sendFoodAssistantMessage(user.id, message)
+      const result = await sendFoodAssistantMessage(
+        user.id,
+        message,
+        assistantLanguage,
+      )
 
       setAssistantResponse(result)
       setAssistantMessages((current) => [
@@ -1656,7 +1663,30 @@ function App() {
                 className="assistant-form"
                 onSubmit={handleAssistantSubmit}
               >
-                <label htmlFor="assistant-message">Your message</label>
+                <label htmlFor="assistant-language">
+                  Response language
+                </label>
+
+                <select
+                  id="assistant-language"
+                  value={assistantLanguage}
+                  onChange={(event) =>
+                    setAssistantLanguage(
+                      event.target.value as AssistantLanguage,
+                    )
+                  }
+                  disabled={isAssistantLoading || !user}
+                >
+                  <option value="en">English</option>
+                  <option value="yo">Yoruba (Yorùbá)</option>
+                  <option value="ig">Igbo</option>
+                  <option value="ha">Hausa</option>
+                  <option value="en-ng">Nigerian English</option>
+                </select>
+
+                <label htmlFor="assistant-message">
+                  Your message
+                </label>
 
                 <div className="assistant-input-row">
                   <input
@@ -1676,18 +1706,23 @@ function App() {
                     className="primary-button assistant-send"
                     type="submit"
                     disabled={
-                      isAssistantLoading || !assistantInput.trim() || !user
+                      isAssistantLoading ||
+                      !assistantInput.trim() ||
+                      !user
                     }
                     aria-label="Send message"
                   >
                     <Send size={17} />
-                    <span>{isAssistantLoading ? 'Sending...' : 'Send'}</span>
+                    <span>
+                      {isAssistantLoading ? 'Sending...' : 'Send'}
+                    </span>
                   </button>
                 </div>
 
                 <p className="field-help">
                   FoodWise currently supports food-plan requests. Your
                   recommendation uses the information saved in your account.
+                  Choose your preferred response language above.
                 </p>
               </form>
             </article>

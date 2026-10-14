@@ -157,9 +157,12 @@ class FoodPlanResponse(BaseModel):
     reason: str
 
 
+
 class FoodAssistantRequest(BaseModel):
     user_id: str
     message: str = Field(min_length=1, max_length=2000)
+    language: Literal["en", "yo", "ig", "ha", "en-ng"] = "en"
+
 
 
 

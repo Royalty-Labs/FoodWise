@@ -10,7 +10,7 @@ from app.schemas import (
     FoodPlanResponse,
 )
 from app.services.assistant_service import (
-    generate_food_plan_message,
+    generate_localized_food_plan_message,
     understand_message,
 )
 from app.services.food_plan_service import create_food_plan
@@ -152,7 +152,11 @@ def assistant_chat(
         household_size=intent.household_size,
     )
 
+
     return FoodAssistantChatResponse(
-        message=generate_food_plan_message(food_plan),
+        message=generate_localized_food_plan_message(
+            food_plan,
+            request.language,
+        ),
         food_plan=food_plan,
     )

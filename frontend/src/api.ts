@@ -198,15 +198,20 @@ export interface FoodAssistantChatResponse {
   food_plan: FoodPlanResponse
 }
 
+
+export type AssistantLanguage = 'en' | 'yo' | 'ig' | 'ha' | 'en-ng'
+
 export function sendFoodAssistantMessage(
   userId: string,
   message: string,
+  language: AssistantLanguage = 'en',
 ) {
   return apiRequest<FoodAssistantChatResponse>('/assistant/chat', {
     method: 'POST',
     body: JSON.stringify({
       user_id: userId,
       message,
+      language,
     }),
   })
 }

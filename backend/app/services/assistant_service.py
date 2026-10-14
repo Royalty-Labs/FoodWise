@@ -204,10 +204,12 @@ def _classify_with_n_atlas(message: str) -> str:
         method="POST",
     )
 
+
     with urllib.request.urlopen(
         request,
         timeout=MODEL_TIMEOUT_SECONDS,
     ) as response:
+
         result = json.loads(response.read().decode("utf-8"))
 
     content = result["choices"][0]["message"]["content"]
@@ -326,8 +328,9 @@ def understand_message(
     )
 
 
+
 def generate_food_plan_message(food_plan: dict) -> str:
-    """Build a response from a generated food plan."""
+    """Build a verified English response from a generated food plan."""
 
     package = food_plan["recommended_package"]
 
@@ -357,3 +360,116 @@ def generate_food_plan_message(food_plan: dict) -> str:
         f"₦{package_cost:,.2f} for {duration_days} days. "
         f"{affordability}"
     )
+
+
+def generate_localized_food_plan_message(
+    food_plan: dict,
+    language: str = "en",
+) -> str:
+    """Generate a food-plan response in the selected language or style."""
+
+    english_message = generate_food_plan_message(food_plan)
+
+    language_instructions = {
+        "yo": (
+            "Respond in natural, clear Yoruba "
+            "(Èdè Yorùbá)."
+        ),
+        "ig": (
+            "Respond in natural, clear Igbo."
+        ),
+        "ha": (
+            "Respond in natural, clear Hausa."
+        ),
+        "en-ng": (
+            "Respond in natural Nigerian English. "
+            "Use familiar Nigerian expressions where appropriate, "
+            "while remaining clear, respectful, and professional."
+        ),
+    }
+
+    if language == "en":
+        return english_message
+
+    instruction = language_instructions.get(language)
+
+    if instruction is None:
+        return english_message
+
+    if not N_ATLAS_API_URL:
+        logger.warning(
+            "N-ATLaS URL is not configured; using English fallback."
+        )
+        return (
+            "Multilingual responses are temporarily unavailable. "
+            "Here is your food plan in English: "
+            f"{english_message}"
+        )
+
+    payload = {
+        "model": N_ATLAS_MODEL_NAME,
+        "messages": [
+            {
+                "role": "system",
+                "content": (
+                    "You are the multilingual food-planning assistant "
+                    "for FoodWise, a Nigerian food budgeting service. "
+                    f"{instruction} "
+                    "Translate or naturally express the supplied "
+                    "food-plan message in the requested language or "
+                    "style. Preserve all names, amounts, currency "
+                    "values, household sizes, durations, and budget "
+                    "conclusions exactly. Do not calculate new values, "
+                    "add recommendations, or invent information. "
+                    "Return only the response, without commentary."
+                ),
+            },
+            {
+                "role": "user",
+                "content": english_message,
+            },
+        ],
+        "temperature": 0.2,
+        "max_tokens": 300,
+        "stream": False,
+    }
+
+    headers = {
+        "Content-Type": "application/json",
+    }
+
+    if N_ATLAS_API_KEY:
+        headers["Authorization"] = f"Bearer {N_ATLAS_API_KEY}"
+
+    request = urllib.request.Request(
+        N_ATLAS_API_URL,
+        data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
+        headers=headers,
+        method="POST",
+    )
+
+    try:
+        with urllib.request.urlopen(
+            request,
+            timeout=15,
+        ) as response:
+            result = json.loads(response.read().decode("utf-8"))
+
+        message = result["choices"][0]["message"]["content"].strip()
+
+        if not message:
+            raise ValueError("N-ATLaS returned an empty response.")
+
+        return message
+
+    except Exception:
+        logger.exception(
+            "N-ATLaS multilingual response failed for language %s.",
+            language,
+        )
+
+        return (
+            "Multilingual responses are temporarily unavailable. "
+            "Here is your food plan in English: "
+            f"{english_message}"
+        )

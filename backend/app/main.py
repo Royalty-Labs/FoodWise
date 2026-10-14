@@ -1,5 +1,14 @@
+
+from pathlib import Path
+
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+# Load the backend .env file BEFORE importing routes and services.
+# This ensures N-ATLaS settings are available when assistant_service.py loads.
+ENV_FILE = Path(__file__).resolve().parent.parent / ".env"
+load_dotenv(ENV_FILE)
 
 from app.routes.users import router as users_router
 from app.routes.budgets import router as budgets_router
@@ -10,7 +19,6 @@ from app.routes.packages import router as packages_router
 from app.routes.recommendations import router as recommendations_router
 from app.routes.food_plan import router as food_plan_router
 from app.routes.assistant import router as assistant_router
-
 
 
 app = FastAPI(
@@ -30,7 +38,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 app.include_router(users_router)
 app.include_router(budgets_router)
