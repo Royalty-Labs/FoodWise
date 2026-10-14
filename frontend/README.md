@@ -1,75 +1,88 @@
-# React + TypeScript + Vite
+# FoodWise Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The FoodWise frontend is the web interface for the FoodWise food-planning and budgeting application.
 
-Currently, two official plugins are available:
+It provides the interface through which users can interact with food budgets, savings, food plans, recommendations, food packages, and the assistant.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Technology Stack
 
-## React Compiler
+- React
+- TypeScript
+- Vite
+- Lucide React
+- CSS and frontend assets
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Prerequisites
 
-## Expanding the ESLint configuration
+Before running the frontend locally, install:
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- Node.js and npm
+- Git
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Getting Started
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### 1. Navigate to the frontend directory
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```powershell
+cd frontend
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+If you are already in the `frontend` directory, skip this command.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### 2. Install dependencies
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```powershell
+npm install
 ```
+
+### 3. Configure the backend URL
+
+Create a file named `.env.local` inside the `frontend` directory.
+
+Add the following variable:
+
+```env
+VITE_API_BASE_URL=http://127.0.0.1:8000
+```
+
+This value assumes that the FoodWise backend is running locally on port `8000`. Use the appropriate backend URL if your configuration differs.
+
+Do not place secret API keys or database credentials in frontend environment variables. Variables prefixed with `VITE_` can be exposed to the browser.
+
+### 4. Start the development server
+
+```powershell
+npm run dev
+```
+
+Vite will display the local address where the frontend is available.
+
+## Available Commands
+
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Start the development server |
+| `npm run build` | Build the production frontend |
+| `npm run lint` | Run the configured lint checks |
+| `npm run preview` | Preview a production build locally |
+
+Run these commands from the `frontend` directory.
+
+## Backend Connection
+
+The frontend communicates with the FoodWise backend API.
+
+- **Live application:** https://foodwise-frontend.onrender.com
+- **Live API:** https://foodwise-jum9.onrender.com
+- **API documentation:** https://foodwise-jum9.onrender.com/docs
+
+Local development requires the backend to be running and the frontend API URL to match the backend configuration.
+
+## Development Notes
+
+- Keep frontend components organized and reusable.
+- Use TypeScript types to improve code clarity and catch errors.
+- Avoid committing `.env.local` or other files containing secrets.
+- Verify API responses and error handling when changing frontend-backend interactions.
+
+For full project information, setup instructions, and architecture, see the root `README.md`.
